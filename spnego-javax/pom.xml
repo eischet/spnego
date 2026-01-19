@@ -6,9 +6,20 @@
     <parent>
         <groupId>com.eischet.spnego</groupId>
         <artifactId>spnego-project</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>${revision}</version>
     </parent>
 
     <artifactId>spnego-javax</artifactId>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.eischet.spnego</groupId>
+            <artifactId>spnego-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+        </dependency>
+    </dependencies>
 
 </project>
