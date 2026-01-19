@@ -38,7 +38,7 @@ import org.ietf.jgss.GSSCredential;
  * @author Darwin V. Felix
  *
  */
-final class SpnegoHttpServletRequest extends HttpServletRequestWrapper 
+public final class SpnegoHttpServletRequest extends HttpServletRequestWrapper
     implements DelegateServletRequest, SpnegoAccessControl {
     
     private static final String MESSAGE_UNSUPPORTED = 

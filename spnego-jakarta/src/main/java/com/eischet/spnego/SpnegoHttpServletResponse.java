@@ -36,7 +36,9 @@ import jakarta.servlet.http.HttpServletResponseWrapper;
  * @author Darwin V. Felix
  * 
  */
-public final class SpnegoHttpServletResponse extends HttpServletResponseWrapper {
+public class SpnegoHttpServletResponse extends HttpServletResponseWrapper {
+
+    // private static final Logger log = LoggerFactory.getLogger(SpnegoHttpServletResponse.class);
 
     private transient boolean statusSet = false;
 
@@ -77,6 +79,33 @@ public final class SpnegoHttpServletResponse extends HttpServletResponseWrapper 
         setStatus(status);
         if (immediate) {
             setContentLength(0);
+            flushBuffer();
+        }
+    }
+
+    /**
+     * Sets the HTTP Status Code and optionally set the the content
+     * length to zero and flush the buffer.
+     *
+     * @param status http status code
+     * @param immediate set to true to set content len to zero and flush
+     * @param errorPage an optional HTML page with a friendly fallback
+     * @throws IOException
+     *
+     * @see #setStatus(int)
+     */
+    public void setStatus(final int status, final boolean immediate, final String errorPage) throws IOException {
+        setStatus(status);
+        if (immediate) {
+            if (errorPage != null) {
+                // log.info("setStatus: immediate=true, sending custom error page");
+                setContentType("text/html; charset=utf-8");
+                getOutputStream().print(errorPage);
+            } else {
+                // log.info("setStatus: immediate=true, flushing response buffers");
+                setContentLength(0);
+                //throw new IOException("woops");
+            }
             flushBuffer();
         }
     }

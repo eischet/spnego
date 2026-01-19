@@ -28,7 +28,7 @@ import org.ietf.jgss.GSSCredential;
  * This class encapsulates a KerberosPrincipal.
  * 
  * <p>This class also has a reference to the client's/requester's 
- * delegated credential (if any). See the {@link DelegateServletRequest} 
+ * delegated credential (if any). See the DelegateServletRequest
  * documentation for more details.</p>
  * 
  * <p>Also, see the delegation examples at 
@@ -38,7 +38,7 @@ import org.ietf.jgss.GSSCredential;
  * @author Darwin V. Felix
  *
  */
-public final class SpnegoPrincipal implements Principal {
+public class SpnegoPrincipal implements Principal {
 
     private final transient KerberosPrincipal kerberosPrincipal;
     

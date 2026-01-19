@@ -62,7 +62,7 @@ import org.ietf.jgss.Oid;
  * @author Darwin V. Felix
  * 
  */
-public final class SpnegoProvider {
+public class SpnegoProvider {
 
     /** Default LOGGER. */
     private static final Logger LOGGER = Logger.getLogger(SpnegoProvider.class.getName());
@@ -104,7 +104,7 @@ public final class SpnegoProvider {
     static SpnegoAuthScheme negotiate(
         final HttpServletRequest req, final SpnegoHttpServletResponse resp
         , final boolean basicSupported, final boolean promptIfNtlm
-        , final String realm) throws IOException {
+        , final String realm, final String errorPage) throws IOException {
 
         final SpnegoAuthScheme scheme = SpnegoProvider.getAuthScheme(
                 req.getHeader(Constants.AUTHZ_HEADER));
@@ -120,7 +120,7 @@ public final class SpnegoProvider {
                 LOGGER.finer("Basic NOT offered: Not Enabled or SSL Required.");
             }
 
-            resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED, true);
+            resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED, true, errorPage);
             
             return null;
             
@@ -144,8 +144,8 @@ public final class SpnegoProvider {
                 throw new UnsupportedOperationException("NTLM specified. Downgraded to " 
                         + "Basic Auth (and/or SSL) but downgrade not supported.");
             }
-            
-            resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED, true);
+
+            resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED, true, errorPage);
             
             return null;
         }

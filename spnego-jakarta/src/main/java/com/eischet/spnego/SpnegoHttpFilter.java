@@ -184,7 +184,7 @@ import org.ietf.jgss.GSSException;
  * @author Darwin V. Felix
  * 
  */
-public final class SpnegoHttpFilter implements Filter {
+public class SpnegoHttpFilter implements Filter {
 
     private static final Logger LOGGER = Logger.getLogger(Constants.LOGGER_NAME);
 

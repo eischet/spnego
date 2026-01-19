@@ -114,15 +114,11 @@ import org.ietf.jgss.GSSException;
  * target="_blank">creating a client keytab</a> example.
  * </p>
  * 
- * <p>
- * Finally, the {@link SpnegoSOAPConnection} class is another example of a class 
- * that uses this class.
- * <p>
- * 
+ *
  * @author Darwin V. Felix
  * 
  */
-public final class SpnegoHttpURLConnection {
+public class SpnegoHttpURLConnection {
 
     private static final Logger LOGGER = Logger.getLogger(Constants.LOGGER_NAME);
     

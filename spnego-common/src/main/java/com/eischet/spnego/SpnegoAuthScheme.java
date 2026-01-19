@@ -28,7 +28,7 @@ package com.eischet.spnego;
  * @author Darwin V. Felix
  *
  */
-final class SpnegoAuthScheme {
+public class SpnegoAuthScheme {
     
     /** Zero length byte array. */
     private static final transient byte[] EMPTY_BYTE_ARRAY = new byte[0];

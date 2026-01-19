@@ -62,7 +62,7 @@ import jakarta.servlet.FilterConfig;
  * @author Darwin V. Felix
  *
  */
-public final class SpnegoFilterConfig { // NOPMD
+public class SpnegoFilterConfig { // NOPMD
     
     private static final Logger LOGGER = Logger.getLogger(Constants.LOGGER_NAME);
     

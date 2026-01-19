@@ -117,7 +117,7 @@ import org.ietf.jgss.GSSException;
  * @author Darwin V. Felix
  * 
  */
-public final class SpnegoHttpURLConnection {
+public class SpnegoHttpURLConnection {
 
     private static final Logger LOGGER = Logger.getLogger(Constants.LOGGER_NAME);
     
