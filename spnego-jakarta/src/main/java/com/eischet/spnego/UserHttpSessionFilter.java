@@ -19,7 +19,6 @@
 package com.eischet.spnego;
 
 import java.io.IOException;
-import java.util.logging.Logger;
 
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
@@ -30,6 +29,8 @@ import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletRequestWrapper;
 import jakarta.servlet.http.HttpSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Be sure to specify this <b>AFTER</b> the <code>SpnegoHttpSessionFilter</code>.
@@ -40,7 +41,7 @@ import jakarta.servlet.http.HttpSession;
 public class UserHttpSessionFilter implements Filter {
     
     /** logger. */
-    private static final Logger LOGGER = Logger.getLogger(UserHttpSessionFilter.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(UserHttpSessionFilter.class);
     
     private String httpSessAttribName = "spnegoAuthNuser";
 
@@ -77,17 +78,17 @@ public class UserHttpSessionFilter implements Filter {
             spnegoAuthNuser = getSpnegoAuthNuser(remoteUser);
             
             if (null != httpSession) {
-                LOGGER.fine("UserHttpSessionFilter::doFilter: has httpSession");
+                LOGGER.debug("UserHttpSessionFilter::doFilter: has httpSession");
                 httpRequest.getSession().setAttribute(httpSessAttribName, spnegoAuthNuser);
             } else {
-                LOGGER.fine("UserHttpSessionFilter::doFilter: no httpSession");
+                LOGGER.debug("UserHttpSessionFilter::doFilter: no httpSession");
             }
 
             // no remoteUser but have a session
         } else if (null != httpSession && null != httpSession.getAttribute(httpSessAttribName)) {
-            LOGGER.fine("UserHttpSessionFilter::doFilter: httpSession=" + httpSession);
+            LOGGER.debug("UserHttpSessionFilter::doFilter: httpSession={}", httpSession);
             spnegoAuthNuser = (String) httpSession.getAttribute("spnegoAuthNuser");
-            LOGGER.fine("UserHttpSessionFilter::doFilter: spnegoAuthNuser=" + spnegoAuthNuser);
+            LOGGER.debug("UserHttpSessionFilter::doFilter: spnegoAuthNuser={}", spnegoAuthNuser);
             
             // no session spnegoAuthNuser nor remoteUser
         } else {

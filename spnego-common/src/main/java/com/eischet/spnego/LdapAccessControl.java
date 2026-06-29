@@ -18,6 +18,9 @@
 
 package com.eischet.spnego;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -31,7 +34,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.logging.Logger;
 
 import javax.naming.Context;
 import javax.naming.NamingEnumeration;
@@ -211,7 +213,7 @@ import javax.naming.ldap.LdapContext;
 public class LdapAccessControl implements UserAccessControl {
     
     private static final Logger LOGGER = 
-            Logger.getLogger(LdapAccessControl.class.getName());
+            LoggerFactory.getLogger(LdapAccessControl.class);
     
     private static final String POLICY_FILE = "spnego.authz.policy.file";
     
@@ -357,7 +359,7 @@ public class LdapAccessControl implements UserAccessControl {
             }
 
             // query AD to update both MapS and expiration time
-            LOGGER.fine("username: " + username + "; role: " + attribute);
+            LOGGER.debug("username: {}; role: {}", username, attribute);
 
             this.writeLock.lock();
             try {
@@ -410,7 +412,7 @@ public class LdapAccessControl implements UserAccessControl {
                 this.writeLock.unlock();
             }
         } catch (NamingException lex) {
-            LOGGER.severe(lex.getMessage());
+            LOGGER.error("NamingException", lex);
             throw new RuntimeException(lex);
         }
         
@@ -427,7 +429,7 @@ public class LdapAccessControl implements UserAccessControl {
         // assert
         if (null == attributeYs || 0 == attributeYs.length) {
             final String errorMsg = "Must provide at least two parameters";
-            LOGGER.severe(errorMsg);
+            LOGGER.error(errorMsg);
             throw new IllegalArgumentException(errorMsg);
         }
         
@@ -476,7 +478,7 @@ public class LdapAccessControl implements UserAccessControl {
         }
 
         // query AD to update both MapS and expiration time
-        LOGGER.fine("username: " + username + "; resource: " + resource);
+        LOGGER.debug("username: {}; resource: {}", username, resource);
         
         boolean matched = false;
         boolean containsHas = false;
@@ -543,7 +545,7 @@ public class LdapAccessControl implements UserAccessControl {
         // assert
         if (null == resourceYs || 0 == resourceYs.length) {
             final String errorMsg = "Must provide at least two parameters";
-            LOGGER.severe(errorMsg);
+            LOGGER.error(errorMsg);
             throw new IllegalArgumentException(errorMsg);
         }
         
@@ -615,7 +617,7 @@ public class LdapAccessControl implements UserAccessControl {
             return cacheUserInfo(username);
         } catch (NamingException nex) {
             final String errorMessage = "Could not get user info for: " + username;
-            LOGGER.warning(errorMessage);
+            LOGGER.warn(errorMessage);
             throw new IllegalStateException(errorMessage, nex);
         } finally {
             this.writeLock.unlock();
@@ -685,7 +687,7 @@ public class LdapAccessControl implements UserAccessControl {
         // assert that an ldap url was provided
         if (policies.getProperty(LDAP_URL, props.getProperty(LDAP_URL, "")).isBlank()) {
             final String errorMessage = "Must provide a value for the spnego.authz.ldap.url parameter";
-            LOGGER.severe(errorMessage);
+            LOGGER.error(errorMessage);
             throw new IllegalStateException(errorMessage);
         } else {
             env.put(Context.PROVIDER_URL
@@ -698,13 +700,13 @@ public class LdapAccessControl implements UserAccessControl {
         if (policies.getProperty(LDAP_USERNAME, props.getProperty(LDAP_USERNAME
                 , props.getProperty(KRB5_USERNAME, policies.getProperty(KRB5_USERNAME, "")))).isBlank()) {
             final String errorMessage = "Must provide a username to use for connecting to the LDAP server";
-            LOGGER.severe(errorMessage);
+            LOGGER.error(errorMessage);
             throw new IllegalArgumentException(errorMessage);
         }
         if (policies.getProperty(LDAP_PASSWORD, props.getProperty(LDAP_PASSWORD
             , props.getProperty(KRB5_PASSWORD, policies.getProperty(KRB5_PASSWORD, "")))).isBlank()) {
             final String errorMessage = "Must provide a password to use for connecting to the LDAP server";
-            LOGGER.severe(errorMessage);
+            LOGGER.error(errorMessage);
             throw new IllegalArgumentException(errorMessage);
         }
         
@@ -808,7 +810,7 @@ public class LdapAccessControl implements UserAccessControl {
                     , props.getProperty(PREFIX_FILTER + idx, "")).trim();
             if (MAX_NUM_FILTERS == i) {
                 final String errorMessage = "Over the max number of filters allowed: " + i;
-                LOGGER.severe(errorMessage);
+                LOGGER.error(errorMessage);
                 throw new IllegalArgumentException(errorMessage);
             } else if (filter.isBlank()) {
                 break;
@@ -819,7 +821,7 @@ public class LdapAccessControl implements UserAccessControl {
         // need minimum of one policy to execute
         if (0 == this.policy.size()) {
             final String errorMessage = "Must specify at least one spnego.authz.ldap.filter.1";
-            LOGGER.severe(errorMessage);
+            LOGGER.error(errorMessage);
             throw new IllegalStateException(errorMessage);
         } 
     }
@@ -848,7 +850,7 @@ public class LdapAccessControl implements UserAccessControl {
             
             if (MAX_NUM_FILTERS == i) {
                 final String errorMessage = "Over the max number of resources allowed: " + i;
-                LOGGER.severe(errorMessage);
+                LOGGER.error(errorMessage);
                 throw new IllegalArgumentException(errorMessage);
             } else if (resname.isBlank()) {
                 break;
@@ -861,9 +863,9 @@ public class LdapAccessControl implements UserAccessControl {
     // pre-condition is that caller has write lock
     private UserInfo cacheUserInfo(final String username) throws NamingException {
         
-        if (null == this.userInfoFilter 
-                || this.userInfoFilter.isBlank() 
-                || this.userInfoLabels.size() == 0) {
+        if (null == this.userInfoFilter
+            || this.userInfoFilter.isBlank()
+            || this.userInfoLabels.isEmpty()) {
             LOGGER.info(USER_INFO_FILTER + " was empty OR no value(s) specified for the "  
                     + USER_INFO +" property");
             return null;
@@ -877,7 +879,7 @@ public class LdapAccessControl implements UserAccessControl {
                         , this.srchCntrls);
         
         boolean found = false;
-        final Map<String, List<String>> labelInfo = new HashMap<String, List<String>>();
+        final Map<String, List<String>> labelInfo = new HashMap<>();
         while (results.hasMoreElements()) {
             found = true;
             final SearchResult result = results.nextElement();
@@ -886,7 +888,7 @@ public class LdapAccessControl implements UserAccessControl {
                 NamingEnumeration iter = attributes.getAll(); iter.hasMore();) {
                 final Attribute attribute = (Attribute) iter.next();
                 final String label = attribute.getID();
-                final List<String> info = new ArrayList<String>();
+                final List<String> info = new ArrayList<>();
                 if (this.userInfoLabels.contains(label)) {
                     labelInfo.put(label, info);
                     for (@SuppressWarnings("rawtypes")
@@ -914,12 +916,12 @@ public class LdapAccessControl implements UserAccessControl {
                                 "UserInfo label not found or not in user store: " + label
                                 + " - labels specified in property file: " + labels);
                     }
-                    return new ArrayList<String>(info.get(label));
+                    return new ArrayList<>(info.get(label));
                 }
 
                 @Override
                 public List<String> getLabels() {
-                    return new ArrayList<String>(info.keySet());
+                    return new ArrayList<>(info.keySet());
                 }
 
                 @Override

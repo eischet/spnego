@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Logger;
 
 import javax.security.auth.login.LoginException;
 import jakarta.servlet.Filter;
@@ -40,6 +39,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.ietf.jgss.GSSException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Http Servlet Filter that provides <a
@@ -186,7 +187,7 @@ import org.ietf.jgss.GSSException;
  */
 public class SpnegoHttpFilter implements Filter {
 
-    private static final Logger LOGGER = Logger.getLogger(Constants.LOGGER_NAME);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SpnegoHttpFilter.class);
 
     /** Object for performing Basic and SPNEGO authentication. */
     private transient SpnegoAuthenticator authenticator;
@@ -291,8 +292,7 @@ public class SpnegoHttpFilter implements Filter {
         try {
             principal = this.authenticator.authenticate(httpRequest, spnegoResponse);
         } catch (GSSException gsse) {
-            LOGGER.severe("HTTP Authorization Header="
-                + httpRequest.getHeader(Constants.AUTHZ_HEADER));
+            LOGGER.error("HTTP Authorization Header={}", httpRequest.getHeader(Constants.AUTHZ_HEADER));
             throw new ServletException(gsse);
         }
 
@@ -303,18 +303,18 @@ public class SpnegoHttpFilter implements Filter {
 
         // assert
         if (null == principal) {
-            LOGGER.severe("Principal was null.");
+            LOGGER.error("Principal was null.");
             spnegoResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, true);
             return;
         }
 
-        LOGGER.fine("principal=" + principal);
+        LOGGER.debug("principal={}", principal);
         
         final SpnegoHttpServletRequest spnegoRequest = 
                 new SpnegoHttpServletRequest(httpRequest, principal, this.accessControl);
                 
         // site wide authZ check (if enabled)
-        if (!isAuthorized((HttpServletRequest) spnegoRequest)) {
+        if (!isAuthorized(spnegoRequest)) {
             LOGGER.info("Principal Not AuthoriZed: " + principal);
             if (this.page403.isBlank()) {
                 spnegoResponse.setStatus(HttpServletResponse.SC_FORBIDDEN, true);  

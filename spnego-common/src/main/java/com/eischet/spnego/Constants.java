@@ -124,28 +124,6 @@ public final class Constants {
     public static final String KRB5_CONF = "spnego.krb5.conf";
 
     /**
-     * Specify logging level.
-     * <pre>
-     * 1 = FINEST
-     * 2 = FINER
-     * 3 = FINE
-     * 4 = CONFIG
-     * 5 = INFO
-     * 6 = WARNING
-     * 7 = SEVERE
-     * </pre>
-     *
-     */
-    public static final String LOGGER_LEVEL = "spnego.logger.level";
-
-    /**
-     * Name of Spnego Logger.
-     *
-     * <p>Example: <code>Logger.getLogger(Constants.LOGGER_NAME)</code></p>
-     */
-    public static final String LOGGER_NAME = "SpnegoHttpFilter";
-
-    /**
      * Servlet init param name in web.xml <b>spnego.login.conf</b>.
      *
      * <p>The location of the login.conf file.</p>

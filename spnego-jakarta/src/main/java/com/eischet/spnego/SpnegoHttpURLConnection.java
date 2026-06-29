@@ -32,8 +32,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.login.LoginContext;
@@ -42,6 +40,8 @@ import javax.security.auth.login.LoginException;
 import org.ietf.jgss.GSSContext;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This Class may be used by custom clients as a convenience when connecting 
@@ -119,7 +119,7 @@ import org.ietf.jgss.GSSException;
  */
 public class SpnegoHttpURLConnection {
 
-    private static final Logger LOGGER = Logger.getLogger(Constants.LOGGER_NAME);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SpnegoHttpURLConnection.class);
     
     /** GSSContext is not thread-safe. */
     private static final Lock LOCK = new ReentrantLock();
@@ -419,12 +419,12 @@ public class SpnegoHttpURLConnection {
             
             // app servers will not return a WWW-Authenticate on 302, (and 30x...?)
             if (null == scheme) {
-                LOGGER.fine("SpnegoProvider.getAuthScheme(...) returned null.");
+                LOGGER.debug("SpnegoProvider.getAuthScheme(...) returned null.");
                 
             // client requesting to skip context loop if 200 and mutualAuth=false
             } else if (this.conn.getResponseCode() == HttpURLConnection.HTTP_OK
                     && !this.mutualAuth) {
-                LOGGER.fine("SpnegoProvider.getAuthScheme(...) returned null.");
+                LOGGER.debug("SpnegoProvider.getAuthScheme(...) returned null.");
                 
             } else {
                 data = scheme.getToken();
@@ -439,7 +439,7 @@ public class SpnegoHttpURLConnection {
 
                     // TODO : support context loops where i>1
                     if (null != data) {
-                        LOGGER.warning("Server requested context loop: " + data.length);
+                        LOGGER.warn("Server requested context loop: {}", data.length);
                     }
                     
                 } else {
@@ -471,7 +471,7 @@ public class SpnegoHttpURLConnection {
                     SpnegoHttpURLConnection.LOCK.unlock();
                 }
             } catch (GSSException gsse) {
-                LOGGER.log(Level.WARNING, "call to dispose context failed.", gsse);
+                LOGGER.warn("call to dispose context failed.", gsse);
             }
         }
         
@@ -479,7 +479,7 @@ public class SpnegoHttpURLConnection {
             try {
                 this.credential.dispose();
             } catch (final GSSException gsse) {
-                LOGGER.log(Level.WARNING, "call to dispose credential failed.", gsse);
+                LOGGER.warn("call to dispose credential failed.", gsse);
             }
         }
         
@@ -490,12 +490,12 @@ public class SpnegoHttpURLConnection {
                 try {
                     if (this.loginContext.getSubject().getPrivateCredentials().size() > 0 
                             || this.loginContext.getSubject().getPublicCredentials().size() > 0) {
-                        LOGGER.log(Level.WARNING, "call to logout context failed.", lex);
+                        LOGGER.warn("call to logout context failed.", lex);
                     } else {
-                        LOGGER.log(Level.FINEST, "no Subject credentials found", lex);
+                        LOGGER.debug("no Subject credentials found", lex);
                     }
                 } catch (Exception e) {
-                    LOGGER.log(Level.INFO, "SpnegoHttpURLConnection::dispose " + e.getMessage());
+                    LOGGER.warn("SpnegoHttpURLConnection::dispose ", e);
                 }
             }
         }
@@ -565,7 +565,7 @@ public class SpnegoHttpURLConnection {
         assertNotConnected();
         assertKeyValue(key, value);
 
-        final List<String> val = new ArrayList<String>();
+        final List<String> val = new ArrayList<>();
         val.add(value);
         
         this.requestProperties.put(key, val);

@@ -26,6 +26,8 @@ import org.ietf.jgss.GSSContext;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
 import org.ietf.jgss.GSSManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.kerberos.KerberosPrincipal;
@@ -40,8 +42,6 @@ import java.util.Enumeration;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Handles <a href="http://en.wikipedia.org/wiki/SPNEGO">SPNEGO</a> or <a
@@ -89,7 +89,7 @@ import java.util.logging.Logger;
  */
 public class SpnegoAuthenticator extends AuthenticatorBase {
 
-    private static final Logger LOGGER = Logger.getLogger(Constants.LOGGER_NAME);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SpnegoAuthenticator.class);
 
     /** GSSContext is not thread-safe. */
     private static final Lock LOCK = new ReentrantLock();
@@ -134,7 +134,7 @@ public class SpnegoAuthenticator extends AuthenticatorBase {
      */
     public SpnegoAuthenticator(final SpnegoFilterConfig config) throws LoginException, GSSException, PrivilegedActionException {
 
-        LOGGER.fine("config=" + config);
+        LOGGER.debug("config={}", config);
 
         this.allowBasic = config.isBasicAllowed();
         this.allowUnsecure = config.isUnsecureAllowed();
@@ -232,7 +232,7 @@ public class SpnegoAuthenticator extends AuthenticatorBase {
      */
     public SpnegoAuthenticator(final String loginModuleName, final SpnegoFilterConfig config) throws LoginException, GSSException, PrivilegedActionException {
 
-        LOGGER.fine("loginModuleName=" + loginModuleName);
+        LOGGER.debug("loginModuleName={}", loginModuleName);
 
         this.allowBasic = config.isBasicAllowed();
         this.allowUnsecure = config.isUnsecureAllowed();
@@ -296,7 +296,7 @@ public class SpnegoAuthenticator extends AuthenticatorBase {
         // NOTE: this may also occur if we do not allow Basic Auth and
         // the client only supports Basic Auth
         if (null == scheme) {
-            LOGGER.fine("scheme null.");
+            LOGGER.debug("scheme null.");
             return null;
         }
 
@@ -310,7 +310,7 @@ public class SpnegoAuthenticator extends AuthenticatorBase {
             if (basicSupported) {
                 principal = doBasicAuth(scheme, resp);
             } else {
-                LOGGER.severe("allowBasic=" + this.allowBasic + "; allowUnsecure=" + this.allowUnsecure + "; req.isSecure()=" + req.isSecure());
+                LOGGER.error("allowBasic={}; allowUnsecure={}; req.isSecure()={}", this.allowBasic, this.allowUnsecure, req.isSecure());
                 throw new UnsupportedOperationException("Basic Auth not allowed" + " or SSL required.");
             }
 
@@ -336,14 +336,14 @@ public class SpnegoAuthenticator extends AuthenticatorBase {
             try {
                 this.serverCredentials.dispose();
             } catch (GSSException e) {
-                LOGGER.log(Level.WARNING, "Dispose failed.", e);
+                LOGGER.warn("Dispose failed.", e);
             }
         }
         if (null != this.loginContext) {
             try {
                 this.loginContext.logout();
             } catch (LoginException lex) {
-                LOGGER.log(Level.WARNING, "Logout failed.", lex);
+                LOGGER.warn("Logout failed.", lex);
             }
         }
     }
@@ -363,7 +363,7 @@ public class SpnegoAuthenticator extends AuthenticatorBase {
         final byte[] data = scheme.getToken();
 
         if (0 == data.length) {
-            LOGGER.fine("Basic Auth data was NULL.");
+            LOGGER.debug("Basic Auth data was NULL.");
             return null;
         }
 
@@ -396,7 +396,7 @@ public class SpnegoAuthenticator extends AuthenticatorBase {
             principal = new SpnegoPrincipal(username + '@' + this.serverPrincipal.getRealm(), KerberosPrincipal.KRB_NT_PRINCIPAL);
 
         } catch (LoginException lex) {
-            LOGGER.fine(lex.getMessage() + ": Login failed. username=" + username);
+            LOGGER.debug("{}: Login failed. username={}", lex.getMessage(), username);
 
             resp.setHeader(Constants.AUTHN_HEADER, Constants.NEGOTIATE_HEADER);
             resp.addHeader(Constants.AUTHN_HEADER, Constants.BASIC_HEADER + " realm=\"" + this.serverPrincipal.getRealm() + '\"');
@@ -433,7 +433,7 @@ public class SpnegoAuthenticator extends AuthenticatorBase {
         final byte[] gss = scheme.getToken();
 
         if (0 == gss.length) {
-            LOGGER.fine("GSS data was NULL.");
+            LOGGER.debug("GSS data was NULL.");
             return null;
         }
 
@@ -452,14 +452,14 @@ public class SpnegoAuthenticator extends AuthenticatorBase {
             }
 
             if (null == token) {
-                LOGGER.fine("Token was NULL.");
+                LOGGER.debug("Token was NULL.");
                 return null;
             }
 
             resp.setHeader(Constants.AUTHN_HEADER, Constants.NEGOTIATE_HEADER + ' ' + Base64.encode(token));
 
             if (!context.isEstablished()) {
-                LOGGER.fine("context not established");
+                LOGGER.debug("context not established");
                 resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED, true, errorPage);
                 return null;
             }

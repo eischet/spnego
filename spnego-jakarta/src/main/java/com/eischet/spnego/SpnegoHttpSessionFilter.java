@@ -19,7 +19,6 @@
 package com.eischet.spnego;
 
 import java.io.IOException;
-import java.util.logging.Logger;
 
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
@@ -29,6 +28,8 @@ import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Be sure to specify this <b>BEFORE</b> the <code>UserHttpSessionFilter</code>.
@@ -39,7 +40,7 @@ import jakarta.servlet.http.HttpSession;
 public class SpnegoHttpSessionFilter implements Filter {
     
     /** logger. */
-    private static final Logger LOGGER = Logger.getLogger(SpnegoHttpSessionFilter.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(SpnegoHttpSessionFilter.class);
     
     private String httpSessAttribName = "spnegoAuthNuser";
     
@@ -72,10 +73,10 @@ public class SpnegoHttpSessionFilter implements Filter {
         // implement your own rules/logic. for this example
         // only perform Kerberos auth if http session does not exist
         if (null == httpSession || null == httpSession.getAttribute(httpSessAttribName)) {
-            LOGGER.fine("SpnegoHttpSessionFilter::doFilter no session");
+            LOGGER.debug("SpnegoHttpSessionFilter::doFilter no session");
             this.spnego.doFilter(request, response, chain);
         } else {
-            LOGGER.fine("SpnegoHttpSessionFilter::doFilter HAS session");
+            LOGGER.debug("SpnegoHttpSessionFilter::doFilter HAS session");
             chain.doFilter(request, response);
         }
     }

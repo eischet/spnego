@@ -25,7 +25,9 @@ replay_pid*
 
 # IntelliJ project files
 .idea/
+*.iml
 
+# Maven
 .flattened-pom.xml
 spnego-common/target/
 spnego-jakarta/target/

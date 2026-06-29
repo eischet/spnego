@@ -21,6 +21,8 @@ package com.eischet.spnego;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.ietf.jgss.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
@@ -31,8 +33,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * This is a Utility Class that can be used for finer grained control 
@@ -59,7 +59,7 @@ import java.util.logging.Logger;
 public class SpnegoProvider {
 
     /** Default LOGGER. */
-    private static final Logger LOGGER = Logger.getLogger(SpnegoProvider.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(SpnegoProvider.class);
 
     /** Factory for GSS-API mechanism. */
     private static final GSSManager MANAGER = GSSManager.getInstance();
@@ -107,13 +107,13 @@ public class SpnegoProvider {
         final SpnegoAuthScheme scheme = SpnegoProvider.getAuthScheme(req.getHeader(Constants.AUTHZ_HEADER));
 
         if (null == scheme || scheme.getToken().length == 0) {
-            LOGGER.fine("Header Token was NULL");
+            LOGGER.debug("Header Token was NULL");
             resp.setHeader(Constants.AUTHN_HEADER, Constants.NEGOTIATE_HEADER);
 
             if (basicSupported) {
                 resp.addHeader(Constants.AUTHN_HEADER, Constants.BASIC_HEADER + " realm=\"" + realm + '\"');
             } else {
-                LOGGER.fine("Basic NOT offered: Not Enabled or SSL Required.");
+                LOGGER.debug("Basic NOT offered: Not Enabled or SSL Required.");
             }
 
             resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED, true, errorPage);
@@ -124,7 +124,7 @@ public class SpnegoProvider {
 
         // assert
         if (scheme.isNtlmToken()) {
-            LOGGER.warning("Downgrade NTLM request to Basic Auth.");
+            LOGGER.warn("Downgrade NTLM request to Basic Auth.");
 
             if (resp.isStatusSet()) {
                 throw new IllegalStateException("HTTP Status already set.");
@@ -195,7 +195,7 @@ public class SpnegoProvider {
     public static SpnegoAuthScheme getAuthScheme(final String header) {
 
         if (null == header || header.isBlank()) {
-            LOGGER.fine("authorization header was missing/null");
+            LOGGER.debug("authorization header was missing/null");
             return null;
 
         } else if (header.startsWith(Constants.NEGOTIATE_HEADER)) {
@@ -222,7 +222,7 @@ public class SpnegoProvider {
         try {
             oid = new Oid("1.3.6.1.5.5.2");
         } catch (GSSException gsse) {
-            LOGGER.log(Level.SEVERE, "Unable to create OID 1.3.6.1.5.5.2 !", gsse);
+            LOGGER.error("Unable to create OID 1.3.6.1.5.5.2 !", gsse);
         }
         return oid;
     }
@@ -266,7 +266,7 @@ public class SpnegoProvider {
      */
     public static CallbackHandler getUsernamePasswordHandler(final String username, final String password) {
 
-        LOGGER.fine("username=" + username + "; password=" + password.hashCode());
+        LOGGER.debug("username={}; password={}", username, password.hashCode());
 
         final CallbackHandler handler = new CallbackHandler() {
             public void handle(final Callback[] callback) {
@@ -278,7 +278,7 @@ public class SpnegoProvider {
                         final PasswordCallback passCallback = (PasswordCallback) callback[i];
                         passCallback.setPassword(password.toCharArray());
                     } else {
-                        LOGGER.warning("Unsupported Callback i=" + i + "; class=" + callback[i].getClass().getName());
+                        LOGGER.warn("Unsupported Callback i=" + i + "; class=" + callback[i].getClass().getName());
                     }
                 }
             }
