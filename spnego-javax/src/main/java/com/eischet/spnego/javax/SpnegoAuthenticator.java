@@ -16,8 +16,14 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-package com.eischet.spnego;
+package com.eischet.spnego.javax;
 
+import com.eischet.spnego.AuthenticatorBase;
+import com.eischet.spnego.Base64;
+import com.eischet.spnego.Constants;
+import com.eischet.spnego.SpnegoAuthScheme;
+import com.eischet.spnego.SpnegoPrincipal;
+import com.eischet.spnego.SpnegoProvider;
 import org.ietf.jgss.GSSContext;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
@@ -293,7 +299,7 @@ public class SpnegoAuthenticator extends AuthenticatorBase {
         final boolean basicSupported = this.allowBasic && (this.allowUnsecure || req.isSecure());
 
         final SpnegoPrincipal principal;
-        final SpnegoAuthScheme scheme = SpnegoProvider.negotiate(req, resp, basicSupported, this.promptIfNtlm, serverRealm, errorPage);
+        final SpnegoAuthScheme scheme = negotiate(req, resp, basicSupported, this.promptIfNtlm, serverRealm, errorPage);
 
         // NOTE: this may also occur if we do not allow Basic Auth and
         // the client only supports Basic Auth
@@ -506,4 +512,78 @@ public class SpnegoAuthenticator extends AuthenticatorBase {
 
         return isLocal;
     }
+
+    /**
+     * Returns the {@link SpnegoAuthScheme} mechanism used to authenticate 
+     * the request. 
+     *
+     * <p>
+     * This method may return null in which case you must check the HTTP 
+     * Status Code to determine if additional processing is required.
+     * <br />
+     * For example, if req. did not contain the Constants.AUTHZ_HEADER, 
+     * the HTTP Status Code SC_UNAUTHORIZED will be set and the client must 
+     * send authentication information on the next request.
+     * </p>
+     *
+     * @param req servlet request
+     * @param resp servlet response
+     * @param basicSupported pass true to offer/allow BASIC Authentication
+     * @param promptIfNtlm pass true ntlm request should be downgraded
+     * @param realm should be the realm the server used to pre-authenticate
+     * @return null if negotiation needs to continue or failed
+     * @throws IOException
+     */
+    private static SpnegoAuthScheme negotiate(final HttpServletRequest req,
+                                      final SpnegoHttpServletResponse resp,
+                                      final boolean basicSupported,
+                                      final boolean promptIfNtlm,
+                                      final String realm,
+                                      final String errorPage
+
+    ) throws IOException {
+
+        final SpnegoAuthScheme scheme = SpnegoProvider.getAuthScheme(req.getHeader(Constants.AUTHZ_HEADER));
+
+        if (null == scheme || scheme.getToken().length == 0) {
+            LOGGER.debug("Header Token was NULL");
+            resp.setHeader(Constants.AUTHN_HEADER, Constants.NEGOTIATE_HEADER);
+
+            if (basicSupported) {
+                resp.addHeader(Constants.AUTHN_HEADER, Constants.BASIC_HEADER + " realm=\"" + realm + '\"');
+            } else {
+                LOGGER.debug("Basic NOT offered: Not Enabled or SSL Required.");
+            }
+
+            resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED, true, errorPage);
+
+            return null;
+
+        }
+
+        // assert
+        if (scheme.isNtlmToken()) {
+            LOGGER.warn("Downgrade NTLM request to Basic Auth.");
+
+            if (resp.isStatusSet()) {
+                throw new IllegalStateException("HTTP Status already set.");
+            }
+
+            if (basicSupported && promptIfNtlm) {
+                resp.setHeader(Constants.AUTHN_HEADER, Constants.BASIC_HEADER + " realm=\"" + realm + '\"');
+            } else {
+                // TODO : decode/decrypt NTLM token and return a new SpnegoAuthScheme
+                // of type "Basic" where the token value is a base64 encoded
+                // username + ":" + password string
+                throw new UnsupportedOperationException("NTLM specified. Downgraded to " + "Basic Auth (and/or SSL) but downgrade not supported.");
+            }
+
+            resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED, true, errorPage);
+
+            return null;
+        }
+
+        return scheme;
+    }
+
 }

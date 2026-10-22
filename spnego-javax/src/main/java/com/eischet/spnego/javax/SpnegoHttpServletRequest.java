@@ -16,8 +16,13 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-package com.eischet.spnego;
+package com.eischet.spnego.javax;
 
+import com.eischet.spnego.Constants;
+import com.eischet.spnego.SpnegoAccessControl;
+import com.eischet.spnego.SpnegoPrincipal;
+import com.eischet.spnego.UserAccessControl;
+import com.eischet.spnego.UserInfo;
 import org.ietf.jgss.GSSCredential;
 
 import javax.servlet.http.HttpServletRequest;

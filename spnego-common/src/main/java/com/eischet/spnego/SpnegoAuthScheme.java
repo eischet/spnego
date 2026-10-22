@@ -72,7 +72,7 @@ public class SpnegoAuthScheme {
      * 
      * @return true if Basic Auth scheme
      */
-    boolean isBasicScheme() {
+    public boolean isBasicScheme() {
         return this.basicScheme;
     }
     
@@ -81,7 +81,7 @@ public class SpnegoAuthScheme {
      * 
      * @return true if Negotiate scheme
      */
-    boolean isNegotiateScheme() {
+    public boolean isNegotiateScheme() {
         return this.negotiateScheme;
     }
     /**
@@ -89,7 +89,7 @@ public class SpnegoAuthScheme {
      * 
      * @return true if Servlet Filter received NTLM token
      */
-    boolean isNtlmToken() {
+    public boolean isNtlmToken() {
         return this.ntlm;
     }
 
@@ -98,7 +98,7 @@ public class SpnegoAuthScheme {
      * 
      * @return "Negotiate" or "Basic"
      */
-    String getScheme() {
+    public String getScheme() {
         return this.scheme;
     }
 
@@ -107,7 +107,7 @@ public class SpnegoAuthScheme {
      * 
      * @return copy of token
      */
-    byte[] getToken() {
+    public byte[] getToken() {
         return (null == this.token) ? EMPTY_BYTE_ARRAY : Base64.decode(this.token);
     }
 }

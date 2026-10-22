@@ -6,7 +6,7 @@ package com.eischet.spnego;
  *
  * <p>
  * This class is primarily used internally or by implementers of
- * custom http clients and by {@link SpnegoFilterConfig}.
+ * custom http clients and by {@code SpnegoFilterConfig}.
  * </p>
  *
  */
@@ -35,7 +35,7 @@ public final class Constants {
      * <p>Set this value to <code>true</code> if server should support
      * credential delegation requests.</p>
      *
-     * <p>Take a look at the {@link DelegateServletRequest} for more
+     * <p>Take a look at the {@code DelegateServletRequest} for more
      * information about other pre-requisites.</p>
      */
     public static final String ALLOW_DELEGATION = "spnego.allow.delegation";

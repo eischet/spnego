@@ -16,8 +16,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-package com.eischet.spnego;
+package com.eischet.spnego.javax;
 
+import com.eischet.spnego.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

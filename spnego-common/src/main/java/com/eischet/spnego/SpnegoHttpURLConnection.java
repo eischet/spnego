@@ -50,7 +50,7 @@ import org.slf4j.LoggerFactory;
  * <p>
  * This mechanism is an alternative to HTTP Basic Authentication where the 
  * HTTP server does not support Basic Auth but instead has SPNEGO support 
- * (take a look at {@link SpnegoHttpFilter}).
+ * (take a look at {@code SpnegoHttpFilter}).
  * </p>
  * 
  * <p>

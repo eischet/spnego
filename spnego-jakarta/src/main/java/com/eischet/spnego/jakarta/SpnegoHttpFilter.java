@@ -16,8 +16,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-package com.eischet.spnego;
+package com.eischet.spnego.jakarta;
 
+import com.eischet.spnego.Constants;
+import com.eischet.spnego.SpnegoPrincipal;
+import com.eischet.spnego.UserAccessControl;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
